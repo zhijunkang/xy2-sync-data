@@ -91,6 +91,17 @@ public class RoleTable {
   private String gradeincrease;
   private String currentattribute;
   private String gametimeremaining;
+  private String shigongx;
+
+  public String getShigongx() {
+    return shigongx;
+  }
+
+  public void setShigongx(String shigongx) {
+    this.shigongx = shigongx;
+  }
+
+
 
 
   public String getRoleId() {

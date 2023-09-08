@@ -1,7 +1,9 @@
 package com.xy2.service;
 
+import cn.hutool.core.date.StopWatch;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.json.JSONUtil;
 import com.xy2.entity.Agenttable;
 import com.xy2.entity.Usertable;
 import com.xy2.repository.AgenttableDaoImpl;
@@ -96,15 +98,17 @@ public class OracleDataSyncService {
 
     @Autowired
     private UsertableDaoImpl usertableDao;
-
     //用户表同步
     private void syncUserTable() {
-        //查询是否有数据需要合并
+
+        StopWatch stopWatch = new StopWatch();
+
+                //查询是否有数据需要合并
         List<Usertable> allList = usertableDao.findAllList(jdbcTemplate1);
+        stopWatch.start("USERTABLE -> 开始同步数据...| 共计：" +allList.size()+ " 条|");
         if (ObjectUtil.isAllEmpty(allList)) {
             return;
         }
-
         allList.forEach(u -> {
             //数据源1的数据到数据源2里面查找id是否已存 不存在 直接新增 已存在 查询最大的id 在现有ID上面递增
             Usertable userId = usertableDao.findById(jdbcTemplate2, Integer.parseInt(u.getUserId()));
@@ -131,6 +135,9 @@ public class OracleDataSyncService {
                 }
             }
         });
+
+        log.info("USERTABLE---同步数据完成 共计：【耗时{}】");
+        stopWatch.stop();
     }
 
 

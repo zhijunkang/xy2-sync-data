@@ -7,13 +7,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import java.util.List;
 import java.util.Map;
 
-/**
- * @author kangzhijun
- * @version V1.0
- * @date 2023/9/7 13:49
- * @copyright 北京北大英华科技有限公司-法律科技中心
- * @description TODO
- */
+
 public class ChongjipackDaoImpl {
 
     public int add(JdbcTemplate jdbcTemplate, Chongjipack chongjipack) {
@@ -54,5 +48,10 @@ public class ChongjipackDaoImpl {
         }else{
             return null;
         }
+    }
+
+    public Long topId(JdbcTemplate jdbcTemplate,String zd){
+        Long maxId = jdbcTemplate.queryForObject(String.format("SELECT MAX(" + zd + ") FROM chongjipack"), Long.class);
+        return maxId;
     }
 }

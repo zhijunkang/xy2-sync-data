@@ -48,4 +48,9 @@ public class SummoningSkillDaoImpl {
             return null;
         }
     }
+
+    public Long topId(JdbcTemplate jdbcTemplate,String zd){
+        Long maxId = jdbcTemplate.queryForObject(String.format("SELECT MAX(" + zd + ") FROM summoning_skill"), Long.class);
+        return maxId;
+    }
 }

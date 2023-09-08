@@ -1,10 +1,14 @@
 package com.xy2.repository;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.xy2.entity.Usertable;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
@@ -52,4 +56,26 @@ public class UsertableDaoImpl {
             return null;
         }
     }
+
+    public Long topId(JdbcTemplate jdbcTemplate, String zd) {
+        Long maxId = jdbcTemplate.queryForObject(String.format("SELECT MAX(" + zd + ") FROM usertable"), Long.class);
+        return maxId;
+    }
+
+    public String isUsernameExists(JdbcTemplate jdbcTemplate, String username) {
+        String sql = "SELECT username FROM usertable WHERE username = ?";
+        List<String> usernames = jdbcTemplate.query(sql, new Object[]{username}, new RowMapper<String>() {
+            @Override
+            public String mapRow(ResultSet resultSet, int i) throws SQLException {
+                return resultSet.getString("username");
+            }
+        });
+        //每个相同的账号后面加hq99
+        if (ObjectUtil.isAllNotEmpty(usernames)) {
+            return usernames.get(0)+"hq99";
+        }
+        return null;
+    }
+
+
 }

@@ -55,4 +55,9 @@ public class GangDaoImpl {
             return null;
         }
     }
+
+    public Long topId(JdbcTemplate jdbcTemplate,String zd){
+        Long maxId = jdbcTemplate.queryForObject(String.format("SELECT MAX(" + zd + ") FROM gang"), Long.class);
+        return maxId;
+    }
 }

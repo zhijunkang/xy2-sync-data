@@ -55,4 +55,9 @@ public class CollectionDaoImpl {
             return null;
         }
     }
+
+    public Long topId(JdbcTemplate jdbcTemplate,String zd){
+        Long maxId = jdbcTemplate.queryForObject(String.format("SELECT MAX(" + zd + ") FROM collection"), Long.class);
+        return maxId;
+    }
 }

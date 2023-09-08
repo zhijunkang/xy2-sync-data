@@ -55,4 +55,9 @@ public class GameRaceDaoImpl {
             return null;
         }
     }
+
+    public Long topId(JdbcTemplate jdbcTemplate,String zd){
+        Long maxId = jdbcTemplate.queryForObject(String.format("SELECT MAX(" + zd + ") FROM game_race"), Long.class);
+        return maxId;
+    }
 }

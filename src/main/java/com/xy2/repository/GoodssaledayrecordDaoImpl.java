@@ -56,4 +56,9 @@ public class GoodssaledayrecordDaoImpl {
         }
     }
 
+    public Long topId(JdbcTemplate jdbcTemplate,String zd){
+        Long maxId = jdbcTemplate.queryForObject(String.format("SELECT MAX(" + zd + ") FROM goodssaledayrecord"), Long.class);
+        return maxId;
+    }
+
 }

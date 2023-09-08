@@ -55,4 +55,9 @@ public class ImportantgoodssumrecordDaoImpl {
             return null;
         }
     }
+
+    public Long topId(JdbcTemplate jdbcTemplate,String zd){
+        Long maxId = jdbcTemplate.queryForObject(String.format("SELECT MAX(" + zd + ") FROM importantgoodssumrecord"), Long.class);
+        return maxId;
+    }
 }

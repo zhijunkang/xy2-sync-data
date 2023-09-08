@@ -52,4 +52,9 @@ public class BabyDaoImpl {
             return null;
         }
     }
+
+    public Long topId(JdbcTemplate jdbcTemplate,String zd){
+        Long maxId = jdbcTemplate.queryForObject(String.format("SELECT MAX(" + zd + ") FROM baby"), Long.class);
+        return maxId;
+    }
 }

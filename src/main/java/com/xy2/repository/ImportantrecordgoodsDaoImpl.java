@@ -55,4 +55,9 @@ public class ImportantrecordgoodsDaoImpl {
             return null;
         }
     }
+
+    public Long topId(JdbcTemplate jdbcTemplate,String zd){
+        Long maxId = jdbcTemplate.queryForObject(String.format("SELECT MAX(" + zd + ") FROM importantrecordgoods"), Long.class);
+        return maxId;
+    }
 }

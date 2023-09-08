@@ -55,4 +55,9 @@ public class PackRecordDaoImpl {
             return null;
         }
     }
+
+    public Long topId(JdbcTemplate jdbcTemplate,String zd){
+        Long maxId = jdbcTemplate.queryForObject(String.format("SELECT MAX(" + zd + ") FROM pack_record"), Long.class);
+        return maxId;
+    }
 }

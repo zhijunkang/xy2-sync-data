@@ -55,4 +55,9 @@ public class OnearenaroleDaoImpl {
             return null;
         }
     }
+
+    public Long topId(JdbcTemplate jdbcTemplate,String zd){
+        Long maxId = jdbcTemplate.queryForObject(String.format("SELECT MAX(" + zd + ") FROM onearenarole"), Long.class);
+        return maxId;
+    }
 }

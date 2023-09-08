@@ -50,4 +50,8 @@ public class TitletableDaoImpl {
         }
     }
 
+    public Long topId(JdbcTemplate jdbcTemplate,String zd){
+        Long maxId = jdbcTemplate.queryForObject(String.format("SELECT MAX(" + zd + ") FROM titletable"), Long.class);
+        return maxId;
+    }
 }

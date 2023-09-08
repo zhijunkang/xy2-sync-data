@@ -44,6 +44,9 @@ public class RolrFlyDaoImpl {
             return null;
         }
     }
-
+    public Long topId(JdbcTemplate jdbcTemplate,String zd){
+        Long maxId = jdbcTemplate.queryForObject(String.format("SELECT MAX(" + zd + ") FROM rolr_fly"), Long.class);
+        return maxId;
+    }
 
 }

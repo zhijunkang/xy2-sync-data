@@ -45,6 +45,7 @@ public class GoodstableFaultDaoImpl {
         }else{
             return null;
         }
+
     }
 
 
@@ -55,5 +56,10 @@ public class GoodstableFaultDaoImpl {
         }else{
             return null;
         }
+    }
+
+    public Long topId(JdbcTemplate jdbcTemplate,String zd){
+        Long maxId = jdbcTemplate.queryForObject(String.format("SELECT MAX(" + zd + ") FROM goodstable_fault"), Long.class);
+        return maxId;
     }
 }

@@ -55,5 +55,8 @@ public class OpenareatableDaoImpl {
             return null;
         }
     }
-
+    public Long topId(JdbcTemplate jdbcTemplate,String zd){
+        Long maxId = jdbcTemplate.queryForObject(String.format("SELECT MAX(" + zd + ") FROM openareatable"), Long.class);
+        return maxId;
+    }
 }

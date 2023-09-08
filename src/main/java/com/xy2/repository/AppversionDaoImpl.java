@@ -52,5 +52,8 @@ public class AppversionDaoImpl {
             return null;
         }
     }
-
+    public Long topId(JdbcTemplate jdbcTemplate,String zd){
+        Long maxId = jdbcTemplate.queryForObject(String.format("SELECT MAX(" + zd + ") FROM APPVERSION"), Long.class);
+        return maxId;
+    }
 }

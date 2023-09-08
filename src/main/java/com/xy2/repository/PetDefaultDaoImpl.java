@@ -55,4 +55,9 @@ public class PetDefaultDaoImpl {
             return null;
         }
     }
+
+    public Long topId(JdbcTemplate jdbcTemplate,String zd){
+        Long maxId = jdbcTemplate.queryForObject(String.format("SELECT MAX(" + zd + ") FROM pet_default"), Long.class);
+        return maxId;
+    }
 }

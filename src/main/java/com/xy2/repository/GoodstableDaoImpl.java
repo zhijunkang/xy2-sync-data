@@ -1,19 +1,15 @@
 package com.xy2.repository;
 
 import com.xy2.entity.Goodstable;
+import com.xy2.entity.PackRecord;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Map;
 
-/**
- * @author kangzhijun
- * @version V1.0
- * @date 2023/9/7 14:23
- * @copyright 北京北大英华科技有限公司-法律科技中心
- * @description TODO
- */
+@Repository
 public class GoodstableDaoImpl {
 
     public int add(JdbcTemplate jdbcTemplate, Goodstable goodstable) {
@@ -59,5 +55,10 @@ public class GoodstableDaoImpl {
     public Long topId(JdbcTemplate jdbcTemplate,String zd){
         Long maxId = jdbcTemplate.queryForObject(String.format("SELECT MAX(" + zd + ") FROM goodstable"), Long.class);
         return maxId;
+    }
+
+    public List<Goodstable> findAllListByRoleId(JdbcTemplate jdbcTemplate, Long roleId) {
+        List<Goodstable> list = jdbcTemplate.query("select * from goodstable where role_id="+roleId,new Object[]{}, new BeanPropertyRowMapper<Goodstable>(Goodstable.class));
+        return list;
     }
 }

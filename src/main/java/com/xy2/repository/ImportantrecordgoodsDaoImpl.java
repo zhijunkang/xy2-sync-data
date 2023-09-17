@@ -3,17 +3,12 @@ package com.xy2.repository;
 import com.xy2.entity.Importantrecordgoods;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Map;
 
-/**
- * @author kangzhijun
- * @version V1.0
- * @date 2023/9/7 14:29
- * @copyright 北京北大英华科技有限公司-法律科技中心
- * @description TODO
- */
+@Repository
 public class ImportantrecordgoodsDaoImpl {
 
     public int add(JdbcTemplate jdbcTemplate, Importantrecordgoods importantrecordgoods) {

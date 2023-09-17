@@ -1,19 +1,15 @@
 package com.xy2.repository;
 
 import com.xy2.entity.Lingbao;
+import com.xy2.entity.RolrFly;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Map;
 
-/**
- * @author kangzhijun
- * @version V1.0
- * @date 2023/9/7 14:32
- * @copyright 北京北大英华科技有限公司-法律科技中心
- * @description TODO
- */
+@Repository
 public class LingbaoDaoImpl {
 
     public int add(JdbcTemplate jdbcTemplate, Lingbao lingbao) {
@@ -59,5 +55,10 @@ public class LingbaoDaoImpl {
     public Long topId(JdbcTemplate jdbcTemplate,String zd){
         Long maxId = jdbcTemplate.queryForObject(String.format("SELECT MAX(" + zd + ") FROM lingbao"), Long.class);
         return maxId;
+    }
+
+    public List<Lingbao> findAllListByRoleId(JdbcTemplate jdbcTemplate, Long roleId) {
+        List<Lingbao> list = jdbcTemplate.query("select * from lingbao where roleid="+roleId,new Object[]{}, new BeanPropertyRowMapper<Lingbao>(Lingbao.class));
+        return list;
     }
 }

@@ -1,8 +1,10 @@
 package com.xy2.repository;
 
 import com.xy2.entity.Baby;
+import com.xy2.entity.Lingbao;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Map;
@@ -11,6 +13,7 @@ import java.util.Map;
  * @author 燕赵阿祖
  * 孩子数据
  */
+@Repository
 public class BabyDaoImpl {
 
     public int add(JdbcTemplate jdbcTemplate, Baby baby) {
@@ -56,5 +59,10 @@ public class BabyDaoImpl {
     public Long topId(JdbcTemplate jdbcTemplate,String zd){
         Long maxId = jdbcTemplate.queryForObject(String.format("SELECT MAX(" + zd + ") FROM baby"), Long.class);
         return maxId;
+    }
+
+    public List<Baby> findAllListByRoleId(JdbcTemplate jdbcTemplate, Long roleId) {
+        List<Baby> list = jdbcTemplate.query("select * from baby where roleid="+roleId,new Object[]{}, new BeanPropertyRowMapper<Baby>(Baby.class));
+        return list;
     }
 }

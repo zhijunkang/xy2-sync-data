@@ -3,11 +3,12 @@ package com.xy2.repository;
 import com.xy2.entity.Species;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Map;
 
-
+@Repository
 public class SpeciesDaoImpl {
 
     public int add(JdbcTemplate jdbcTemplate, Species species) {

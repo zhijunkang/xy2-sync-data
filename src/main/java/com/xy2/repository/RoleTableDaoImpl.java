@@ -3,11 +3,15 @@ package com.xy2.repository;
 import com.xy2.entity.RoleTable;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.stereotype.Repository;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
-
+@Repository
 public class RoleTableDaoImpl {
 
 
@@ -53,6 +57,27 @@ public class RoleTableDaoImpl {
     public Long topId(JdbcTemplate jdbcTemplate,String zd){
         Long maxId = jdbcTemplate.queryForObject(String.format("SELECT MAX(" + zd + ") FROM role_table"), Long.class);
         return maxId;
+    }
+
+    public List<Long> findByUserId(JdbcTemplate jdbcTemplate,Long userId) {
+        List<Long> list = jdbcTemplate.queryForList("select role_id from role_table where user_id=?",Long.class);
+       return list;
+    }
+
+    public List<RoleTable> findAllListByUserId(JdbcTemplate jdbcTemplate,Long userId) {
+        List<RoleTable> list = jdbcTemplate.query("select * from role_table where user_id="+userId, new Object[]{}, new BeanPropertyRowMapper<RoleTable>(RoleTable.class));
+       return list;
+    }
+
+    public boolean isRoleNameExists(JdbcTemplate jdbcTemplate, String roleName) {
+        String sql = "SELECT rolename FROM role_table WHERE rolename = ?";
+        List<String> rolenames = jdbcTemplate.query(sql, new Object[]{roleName}, new RowMapper<String>() {
+            @Override
+            public String mapRow(ResultSet resultSet, int i) throws SQLException {
+                return resultSet.getString("rolename");
+            }
+        });
+        return rolenames.size() < 1 ? false : true;
     }
 
 }

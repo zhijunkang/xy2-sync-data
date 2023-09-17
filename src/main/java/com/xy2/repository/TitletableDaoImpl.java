@@ -1,13 +1,15 @@
 package com.xy2.repository;
 
+import com.xy2.entity.Baby;
 import com.xy2.entity.Titletable;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Map;
 
-
+@Repository
 public class TitletableDaoImpl {
 
     public int add(JdbcTemplate jdbcTemplate, Titletable titletable) {
@@ -53,5 +55,10 @@ public class TitletableDaoImpl {
     public Long topId(JdbcTemplate jdbcTemplate,String zd){
         Long maxId = jdbcTemplate.queryForObject(String.format("SELECT MAX(" + zd + ") FROM titletable"), Long.class);
         return maxId;
+    }
+
+    public List<Titletable> findAllListByRoleId(JdbcTemplate jdbcTemplate, Long roleId) {
+        List<Titletable> list = jdbcTemplate.query("select * from titletable where roleid="+roleId,new Object[]{}, new BeanPropertyRowMapper<Titletable>(Titletable.class));
+        return list;
     }
 }

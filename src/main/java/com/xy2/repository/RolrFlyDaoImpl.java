@@ -1,12 +1,14 @@
 package com.xy2.repository;
 
+import com.xy2.entity.Mount;
 import com.xy2.entity.RolrFly;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Map;
-
+@Repository
 public class RolrFlyDaoImpl {
 
     public int add(JdbcTemplate jdbcTemplate, RolrFly rolrFly) {
@@ -14,7 +16,7 @@ public class RolrFlyDaoImpl {
                 rolrFly.getFlyId(),rolrFly.getFlyName(),rolrFly.getFlyLevel(),rolrFly.getRoleId(),rolrFly.getMoveLevel(),rolrFly.getFuel());
     }
 
-    public int update(JdbcTemplate jdbcTemplate,RolrFly rolrFly) {
+    public int update(JdbcTemplate jdbcTemplate, RolrFly rolrFly) {
         return jdbcTemplate.update("UPDATE  rolr_fly  SET flyname=?,flylevel=?,role_id=?,movelevel=?,fuel=?"
                         +" where flyid=?",
                 rolrFly.getFlyName(),rolrFly.getFlyLevel(),rolrFly.getRoleId(),rolrFly.getMoveLevel(),rolrFly.getFuel(),
@@ -26,7 +28,7 @@ public class RolrFlyDaoImpl {
         return jdbcTemplate.update("DELETE from rolr_fly where flyid=?",id);
     }
 
-    public RolrFly findById(JdbcTemplate jdbcTemplate,int id) {
+    public RolrFly findById(JdbcTemplate jdbcTemplate, int id) {
         List<RolrFly> list = jdbcTemplate.query("select * from rolr_fly where flyid=?", new Object[]{id}, new BeanPropertyRowMapper<RolrFly>(RolrFly.class));
         if(list!=null && list.size()>0){
             RolrFly rolrFly = list.get(0);
@@ -49,4 +51,8 @@ public class RolrFlyDaoImpl {
         return maxId;
     }
 
+    public List<RolrFly> findAllListByRoleId(JdbcTemplate jdbcTemplate, Long roleId) {
+        List<RolrFly> list = jdbcTemplate.query("select * from rolr_fly where role_id="+roleId,new Object[]{}, new BeanPropertyRowMapper<RolrFly>(RolrFly.class));
+        return list;
+    }
 }

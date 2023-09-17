@@ -3,11 +3,12 @@ package com.xy2.repository;
 import com.xy2.entity.Salegoods2;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Map;
 
-
+@Repository
 public class Salegoods2DaoImpl {
 
     public int add(JdbcTemplate jdbcTemplate, Salegoods2 salegoods2) {

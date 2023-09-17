@@ -1,13 +1,15 @@
 package com.xy2.repository;
 
+import com.xy2.entity.Goodstable;
 import com.xy2.entity.RoleSummoning;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Map;
 
-
+@Repository
 public class RoleSummoningDaoImpl {
 
     public int add(JdbcTemplate jdbcTemplate, RoleSummoning roleSummoning) {
@@ -53,5 +55,10 @@ public class RoleSummoningDaoImpl {
     public Long topId(JdbcTemplate jdbcTemplate,String zd){
         Long maxId = jdbcTemplate.queryForObject(String.format("SELECT MAX(" + zd + ") FROM role_summoning"), Long.class);
         return maxId;
+    }
+
+    public List<RoleSummoning> findAllListByRoleId(JdbcTemplate jdbcTemplate, Long roleId) {
+        List<RoleSummoning> list = jdbcTemplate.query("select * from role_summoning where roleid="+roleId,new Object[]{}, new BeanPropertyRowMapper<RoleSummoning>(RoleSummoning.class));
+        return list;
     }
 }

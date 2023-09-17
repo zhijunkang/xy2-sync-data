@@ -3,6 +3,7 @@ package com.xy2.repository;
 import com.xy2.entity.Buycount;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Map;
@@ -10,6 +11,7 @@ import java.util.Map;
 /**
  销售统计
  */
+@Repository
 public class BuycountDaoImpl {
 
     public int add(JdbcTemplate jdbcTemplate, Buycount buycount) {

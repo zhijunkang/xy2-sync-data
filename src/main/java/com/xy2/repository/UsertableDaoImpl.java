@@ -12,13 +12,6 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
-/**
- * @author kangzhijun
- * @version V1.0
- * @date 2023/9/7 13:21
- * @copyright 北京北大英华科技有限公司-法律科技中心
- * @description TODO
- */
 @Repository
 public class UsertableDaoImpl {
 
@@ -62,7 +55,7 @@ public class UsertableDaoImpl {
         return maxId;
     }
 
-    public String isUsernameExists(JdbcTemplate jdbcTemplate, String username) {
+    public boolean isUsernameExists(JdbcTemplate jdbcTemplate, String username) {
         String sql = "SELECT username FROM usertable WHERE username = ?";
         List<String> usernames = jdbcTemplate.query(sql, new Object[]{username}, new RowMapper<String>() {
             @Override
@@ -70,11 +63,7 @@ public class UsertableDaoImpl {
                 return resultSet.getString("username");
             }
         });
-        //每个相同的账号后面加hq99
-        if (ObjectUtil.isAllNotEmpty(usernames)) {
-            return usernames.get(0)+"hq99";
-        }
-        return null;
+        return usernames.size() < 1 ? false : true;
     }
 
 

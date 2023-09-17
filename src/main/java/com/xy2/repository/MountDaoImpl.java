@@ -1,13 +1,15 @@
 package com.xy2.repository;
 
 import com.xy2.entity.Mount;
+import com.xy2.entity.RoleSummoning;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Map;
 
-
+@Repository
 public class MountDaoImpl {
 
     public int add(JdbcTemplate jdbcTemplate, Mount mount) {
@@ -53,5 +55,10 @@ public class MountDaoImpl {
     public Long topId(JdbcTemplate jdbcTemplate,String zd){
         Long maxId = jdbcTemplate.queryForObject(String.format("SELECT MAX(" + zd + ") FROM mount"), Long.class);
         return maxId;
+    }
+
+    public List<Mount> findAllListByRoleId(JdbcTemplate jdbcTemplate, Long roleId) {
+        List<Mount> list = jdbcTemplate.query("select * from mount where roleid="+roleId,new Object[]{}, new BeanPropertyRowMapper<Mount>(Mount.class));
+        return list;
     }
 }

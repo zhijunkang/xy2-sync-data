@@ -20,4 +20,5 @@ public class RoleDataBean {
     private List<Lingbao> lingbaos;//灵宝
     private List<Baby> babys;//孩子
     private List<Titletable> titletables;//称谓
+    private List<RolePal> rolePals;//伙伴数据
 }

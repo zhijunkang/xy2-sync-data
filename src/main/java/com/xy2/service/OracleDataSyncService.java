@@ -201,6 +201,11 @@ public class OracleDataSyncService {
                     titletable.setRoleid(String.valueOf(role_id));
                     titletableDao.add(jdbcTemplate2,titletable);
                 });
+                //写入角色伙伴数据
+                roleDataBean.getRolePals().forEach(rolePal -> {
+                    rolePal.setRoleid(String.valueOf(role_id));
+                    rolePalDao.add(jdbcTemplate2,rolePal);
+                });
 
             });
         });
@@ -245,6 +250,8 @@ public class OracleDataSyncService {
     private BabyDaoImpl babyDao;
     @Autowired
     private TitletableDaoImpl titletableDao;
+    @Autowired
+    private RolePalDaoImpl rolePalDao;
 
     /**
      * 封装合区用户数据
@@ -289,6 +296,9 @@ public class OracleDataSyncService {
                 //称号信息
                 List<Titletable> titles = titletableDao.findAllListByRoleId(jdbcTemplate1, Long.parseLong(role.getRoleId()));
                 roleDataBean.setTitletables(titles);
+                //伙伴信息
+                List<RolePal> rolePals = rolePalDao.findAllListByRoleId(jdbcTemplate1, Long.parseLong(role.getRoleId()));
+                roleDataBean.setRolePals(rolePals);
                 roleDataBeans.add(roleDataBean);
             });
             userDataBean.setRoleDataBeans(roleDataBeans);

@@ -1,6 +1,7 @@
 package com.xy2.repository;
 
 import com.xy2.entity.RolePal;
+import com.xy2.entity.Titletable;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -54,5 +55,10 @@ public class RolePalDaoImpl {
     public Long topId(JdbcTemplate jdbcTemplate,String zd){
         Long maxId = jdbcTemplate.queryForObject(String.format("SELECT MAX(" + zd + ") FROM role_pal"), Long.class);
         return maxId;
+    }
+
+    public List<RolePal> findAllListByRoleId(JdbcTemplate jdbcTemplate, Long roleId) {
+        List<RolePal> list = jdbcTemplate.query("select * from role_pal where roleid="+roleId,new Object[]{}, new BeanPropertyRowMapper<RolePal>(RolePal.class));
+        return list;
     }
 }

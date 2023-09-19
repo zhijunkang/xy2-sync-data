@@ -1,5 +1,6 @@
 package com.xy2.entity;
 
+import javax.persistence.Table;
 
 public class Agenttable {
 

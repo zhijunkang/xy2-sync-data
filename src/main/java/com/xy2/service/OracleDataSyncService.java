@@ -5,11 +5,14 @@ import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.StopWatch;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.json.JSONNull;
 import cn.hutool.json.JSONUtil;
+import com.baomidou.dynamic.datasource.DynamicRoutingDataSource;
 import com.xy2.bean.RoleDataBean;
 import com.xy2.bean.UserDataBean;
 import com.xy2.entity.*;
 import com.xy2.repository.*;
+import com.xy2.utils.RedisParameterUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -36,12 +39,7 @@ public class OracleDataSyncService {
 
 
     @Autowired
-    @Qualifier("oracle1DataSource")
-    private DataSource oracleDataSource1;
-
-    @Autowired
-    @Qualifier("oracle2DataSource")
-    private DataSource oracleDataSource2;
+    DataSource dataSource;
 
     private static JdbcTemplate jdbcTemplate1;
 
@@ -51,8 +49,12 @@ public class OracleDataSyncService {
     private String hq;
 
     @Autowired
+    private  RedisDataSyncService redisDataSyncService;
+
+    @Autowired
     private void setJdbcTemplate1() {
-        JdbcTemplate jdbcTemplate = new JdbcTemplate(oracleDataSource1);
+        DynamicRoutingDataSource ds = (DynamicRoutingDataSource) dataSource;
+        JdbcTemplate jdbcTemplate = new JdbcTemplate(ds.getDataSource("slave_1"));
         OracleDataSyncService.setJdbcTemplate1Factory(jdbcTemplate);
     }
 
@@ -62,7 +64,8 @@ public class OracleDataSyncService {
 
     @Autowired
     private void setJdbcTemplate2() {
-        JdbcTemplate jdbcTemplate = new JdbcTemplate(oracleDataSource2);
+        DynamicRoutingDataSource ds = (DynamicRoutingDataSource) dataSource;
+        JdbcTemplate jdbcTemplate = new JdbcTemplate(ds.getDataSource("slave_2"));
         OracleDataSyncService.setJdbcTemplate2Factory(jdbcTemplate);
     }
 
@@ -118,16 +121,16 @@ public class OracleDataSyncService {
 
         //开始同步帮派数据
         List<Gang> gangs = this.gangDataBuilds();
-        gangs.forEach(gang ->{
+        gangs.forEach(gang -> {
             Long gangId = gangDao.topId(jdbcTemplate2, "gangid");
             String oldGangId = gang.getGangid();
             gang.setGangid(String.valueOf(gangId));
             boolean gangNameExists = gangDao.isGangNameExists(jdbcTemplate2, gang.getGangname());
-            if(gangNameExists){
-                gang.setGangname(hq+gang.getGangname());
+            if (gangNameExists) {
+                gang.setGangname(hq + gang.getGangname());
             }
-            gangRel.put(Long.parseLong(oldGangId),gangId);
-            gangDao.add(jdbcTemplate2,gang);
+            gangRel.put(Long.parseLong(oldGangId), gangId);
+            gangDao.add(jdbcTemplate2, gang);
         });
 
         //开始同步用户数据
@@ -135,7 +138,7 @@ public class OracleDataSyncService {
             LocalDateTime lasetLoginTime = LocalDateTime.parse(userDataBean.getUserTable().getUserlastlogin(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
             long days = Duration.between(lasetLoginTime, LocalDateTime.now()).toDays();
             //账号大于40天未登录进行清除
-            if(days > 40){
+            if (days > 40) {
                 return;
             }
             Boolean usernameExists = usertableDao.isUsernameExists(jdbcTemplate2, userDataBean.getUserTable().getUsername());
@@ -158,7 +161,7 @@ public class OracleDataSyncService {
                 }
                 //如果有帮派写入帮派数据
                 Long aLong = gangRel.get(roleTable.getGangId());
-                if(Objects.nonNull(aLong)){
+                if (Objects.nonNull(aLong)) {
                     roleTable.setGangId(String.valueOf(aLong));
                 }
                 roleTableDao.add(jdbcTemplate2, roleTable);
@@ -170,41 +173,61 @@ public class OracleDataSyncService {
                 roleDataBean.getGoodstables().forEach(goodstable -> {
                     goodstable.setRoleId(String.valueOf(role_id));
                     goodstableDao.add(jdbcTemplate2, goodstable);
+                    redisDataSyncService.insertKey(RedisParameterUtil.GOODS, goodstable.getRgid() + "", JSONUtil.toJsonStr(goodstable));
+                    redisDataSyncService.insertListRedis(RedisParameterUtil.GOODS, goodstable.getRoleId(), goodstable.getRgid());
+                    redisDataSyncService.insertListRedis(RedisParameterUtil.GOODSID + "_" + goodstable.getRoleId(), goodstable.getGoodsid(), goodstable.getRgid());
+                    redisDataSyncService.insertListRedis(RedisParameterUtil.GOODSST + "_" + goodstable.getRoleId(), goodstable.getStatus(), goodstable.getRgid());
+                    redisDataSyncService.insertRoleControAdd(RedisParameterUtil.GOODS, goodstable.getRgid());
                 });
                 //写入角色召唤兽数据
                 roleDataBean.getPets().forEach(pet -> {
                     pet.setRoleid(String.valueOf(role_id));
-                    roleSummoningDao.add(jdbcTemplate2,pet);
+                    roleSummoningDao.add(jdbcTemplate2, pet);
+                    redisDataSyncService.insertKey(RedisParameterUtil.PET, pet.getSid(), JSONUtil.toJsonStr(pet));
+                    redisDataSyncService.insertListRedis(RedisParameterUtil.PET, pet.getRoleid(), pet.getSid());
+                    redisDataSyncService.insertRoleControAdd(RedisParameterUtil.PET, pet.getSid());
                 });
                 //写入角色坐骑数据
                 roleDataBean.getMounts().forEach(mount -> {
                     mount.setRoleid(String.valueOf(role_id));
-                    mountDao.add(jdbcTemplate2,mount);
+                    mountDao.add(jdbcTemplate2, mount);
+                    redisDataSyncService.insertKey(RedisParameterUtil.MOUNT, mount.getMid(),JSONUtil.toJsonStr(mount));
+                    redisDataSyncService.insertListRedis(RedisParameterUtil.MOUNT, mount.getRoleid(), mount.getMid());
+                    redisDataSyncService.insertRoleControAdd(RedisParameterUtil.MOUNT, mount.getMid());
                 });
                 //写入角色飞行器数据
-                roleDataBean.getFlys().forEach(rolrFly -> {
-                    rolrFly.setRoleId(String.valueOf(role_id));
-                    rolrFlyDao.add(jdbcTemplate2,rolrFly);
+                roleDataBean.getFlys().forEach(fly -> {
+                    fly.setRoleId(String.valueOf(role_id));
+//                    rolrFlyDao.add(jdbcTemplate2, fly);
+                    redisDataSyncService.insertKey(RedisParameterUtil.FLY, fly.getMid(), JSONUtil.toJsonStr(fly));
+                    redisDataSyncService.insertListRedis(RedisParameterUtil.FLY,fly.getRoleId(), fly.getMid());
+                    redisDataSyncService.insertRoleControAdd(RedisParameterUtil.FLY, fly.getMid());
                 });
                 //写入角色灵宝数据
                 roleDataBean.getLingbaos().forEach(lingbao -> {
                     lingbao.setRoleid(String.valueOf(role_id));
-                    lingbaoDao.add(jdbcTemplate2,lingbao);
+                    lingbaoDao.add(jdbcTemplate2, lingbao);
+                    redisDataSyncService.insertKey(RedisParameterUtil.LINGBAO, lingbao.getBaoid() + "", JSONUtil.toJsonStr(lingbao));
+                    redisDataSyncService.insertListRedis(RedisParameterUtil.LINGBAO, lingbao.getRoleid().toString(), lingbao.getBaoid() + "");
+                    redisDataSyncService.insertRoleControAdd(RedisParameterUtil.LINGBAO, lingbao.getBaoid());
                 });
                 //写入角色孩子数据
                 roleDataBean.getBabys().forEach(baby -> {
                     baby.setRoleid(String.valueOf(role_id));
-                    babyDao.add(jdbcTemplate2,baby);
+                    babyDao.add(jdbcTemplate2, baby);
+                    redisDataSyncService.insertKey(RedisParameterUtil.BABY,baby.getBabyid(), JSONUtil.toJsonStr(baby));
+                    redisDataSyncService.insertListRedis(RedisParameterUtil.BABY,baby.getRoleid(),baby.getBabyid());
+                    redisDataSyncService.insertRoleControAdd(RedisParameterUtil.BABY, baby.getBabyid());
                 });
                 //写入角色称谓数据
                 roleDataBean.getTitletables().forEach(titletable -> {
                     titletable.setRoleid(String.valueOf(role_id));
-                    titletableDao.add(jdbcTemplate2,titletable);
+                    titletableDao.add(jdbcTemplate2, titletable);
                 });
                 //写入角色伙伴数据
                 roleDataBean.getRolePals().forEach(rolePal -> {
                     rolePal.setRoleid(String.valueOf(role_id));
-                    rolePalDao.add(jdbcTemplate2,rolePal);
+                    rolePalDao.add(jdbcTemplate2, rolePal);
                 });
 
             });
@@ -212,20 +235,20 @@ public class OracleDataSyncService {
 
         //开始同步好友数据
         List<Friend> friends = this.friendDataBuilds();
-        friends.forEach(friend ->{
+        friends.forEach(friend -> {
             Long fid = friendDao.topId(jdbcTemplate2, "fid");
             Long newRole = roleRel.get(friend.getRoleid());
-            if(Objects.isNull(newRole)){
+            if (Objects.isNull(newRole)) {
                 return;
             }
             Long newFriend = roleRel.get(friend.getFriendid());
-            if(Objects.isNull(newFriend)){
+            if (Objects.isNull(newFriend)) {
                 return;
             }
             friend.setFid(String.valueOf(fid));
             friend.setRoleid(String.valueOf(newRole));
             friend.setFriendid(String.valueOf(newFriend));
-            friendDao.add(jdbcTemplate2,friend);
+            friendDao.add(jdbcTemplate2, friend);
         });
         log.info("USERTABLE---同步数据完成 共计：【耗时{}】");
         stopWatch.stop();
@@ -277,27 +300,59 @@ public class OracleDataSyncService {
                 }
                 //物品信息
                 List<Goodstable> goodstables = goodstableDao.findAllListByRoleId(jdbcTemplate1, Long.parseLong(role.getRoleId()));
+                if(ObjectUtil.isNull(goodstables)){
+                    //从缓存中取
+
+                }
                 roleDataBean.setGoodstables(goodstables);
                 //召唤兽信息
                 List<RoleSummoning> roleSumms = roleSummoningDao.findAllListByRoleId(jdbcTemplate1, Long.parseLong(role.getRoleId()));
+                if(ObjectUtil.isNull(roleSumms)){
+                    //从缓存中取
+
+                }
                 roleDataBean.setPets(roleSumms);
                 //坐骑信息
                 List<Mount> mounts = mountDao.findAllListByRoleId(jdbcTemplate1, Long.parseLong(role.getRoleId()));
+                if(ObjectUtil.isNull(mounts)){
+                    //从缓存中取
+
+                }
                 roleDataBean.setMounts(mounts);
                 //飞行器信息
                 List<RolrFly> rolrFlys = rolrFlyDao.findAllListByRoleId(jdbcTemplate1, Long.parseLong(role.getRoleId()));
+                if(ObjectUtil.isNull(rolrFlys)){
+                    //从缓存中取
+
+                }
                 roleDataBean.setFlys(rolrFlys);
                 //灵宝信息
                 List<Lingbao> lingbaos = lingbaoDao.findAllListByRoleId(jdbcTemplate1, Long.parseLong(role.getRoleId()));
+                if(ObjectUtil.isNull(lingbaos)){
+                    //从缓存中取
+
+                }
                 roleDataBean.setLingbaos(lingbaos);
                 //孩子信息
                 List<Baby> babys = babyDao.findAllListByRoleId(jdbcTemplate1, Long.parseLong(role.getRoleId()));
+                if(ObjectUtil.isNull(babys)){
+                    //从缓存中取
+
+                }
                 roleDataBean.setBabys(babys);
                 //称号信息
                 List<Titletable> titles = titletableDao.findAllListByRoleId(jdbcTemplate1, Long.parseLong(role.getRoleId()));
+                if(ObjectUtil.isNull(titles)){
+                    //从缓存中取
+
+                }
                 roleDataBean.setTitletables(titles);
                 //伙伴信息
                 List<RolePal> rolePals = rolePalDao.findAllListByRoleId(jdbcTemplate1, Long.parseLong(role.getRoleId()));
+                if(ObjectUtil.isNull(rolePals)){
+                    //从缓存中取
+
+                }
                 roleDataBean.setRolePals(rolePals);
                 roleDataBeans.add(roleDataBean);
             });

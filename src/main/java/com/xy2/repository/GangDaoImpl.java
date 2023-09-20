@@ -56,7 +56,7 @@ public class GangDaoImpl {
 
     public Long topId(JdbcTemplate jdbcTemplate,String zd){
         Long maxId = jdbcTemplate.queryForObject(String.format("SELECT MAX(" + zd + ") FROM gang"), Long.class);
-        return maxId;
+        return maxId+1L;
     }
 
     public boolean isGangNameExists(JdbcTemplate jdbcTemplate, String gangname) {

@@ -53,6 +53,6 @@ public class RoleorderDaoImpl {
 
     public Long topId(JdbcTemplate jdbcTemplate,String zd){
         Long maxId = jdbcTemplate.queryForObject(String.format("SELECT MAX(" + zd + ") FROM roleorder"), Long.class);
-        return maxId;
+        return maxId+1l;
     }
 }

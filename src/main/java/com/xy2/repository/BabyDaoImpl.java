@@ -58,7 +58,7 @@ public class BabyDaoImpl {
 
     public Long topId(JdbcTemplate jdbcTemplate,String zd){
         Long maxId = jdbcTemplate.queryForObject(String.format("SELECT MAX(" + zd + ") FROM baby"), Long.class);
-        return maxId;
+        return maxId+1l;
     }
 
     public List<Baby> findAllListByRoleId(JdbcTemplate jdbcTemplate, Long roleId) {

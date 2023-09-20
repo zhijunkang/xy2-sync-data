@@ -9,7 +9,7 @@ public class RolePal {
   private String lvl;
   private String exp;
   private String parts;
-  private String roleid;
+  private String roleId;
 
 
   public String getId() {
@@ -67,11 +67,11 @@ public class RolePal {
 
 
   public String getRoleid() {
-    return roleid;
+    return roleId;
   }
 
   public void setRoleid(String roleid) {
-    this.roleid = roleid;
+    this.roleId = roleid;
   }
 
 }

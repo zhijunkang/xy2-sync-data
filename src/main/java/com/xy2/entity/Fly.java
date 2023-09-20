@@ -23,7 +23,7 @@ public class Fly {
     // 经验
     private Integer exp;
     // 角色ID
-    private String roleId;
+    private String roleid;
     //飞行器
     private Integer skin;
     // 升级所需经验

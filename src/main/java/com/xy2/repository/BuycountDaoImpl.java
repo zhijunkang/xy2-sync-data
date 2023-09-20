@@ -56,6 +56,6 @@ public class BuycountDaoImpl {
 
     public Long topId(JdbcTemplate jdbcTemplate,String zd){
         Long maxId = jdbcTemplate.queryForObject(String.format("SELECT MAX(" + zd + ") FROM buycount"), Long.class);
-        return maxId;
+        return maxId+1l;
     }
 }

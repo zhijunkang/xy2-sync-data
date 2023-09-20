@@ -53,6 +53,6 @@ public class ImportantrecordgoodsDaoImpl {
 
     public Long topId(JdbcTemplate jdbcTemplate,String zd){
         Long maxId = jdbcTemplate.queryForObject(String.format("SELECT MAX(" + zd + ") FROM importantrecordgoods"), Long.class);
-        return maxId;
+        return maxId+1l;
     }
 }

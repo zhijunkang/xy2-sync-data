@@ -52,7 +52,7 @@ public class UsertableDaoImpl {
 
     public Long topId(JdbcTemplate jdbcTemplate, String zd) {
         Long maxId = jdbcTemplate.queryForObject(String.format("SELECT MAX(" + zd + ") FROM usertable"), Long.class);
-        return maxId;
+        return maxId+1l;
     }
 
     public boolean isUsernameExists(JdbcTemplate jdbcTemplate, String username) {

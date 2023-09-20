@@ -54,7 +54,7 @@ public class MountDaoImpl {
 
     public Long topId(JdbcTemplate jdbcTemplate,String zd){
         Long maxId = jdbcTemplate.queryForObject(String.format("SELECT MAX(" + zd + ") FROM mount"), Long.class);
-        return maxId;
+        return maxId+1l;
     }
 
     public List<Mount> findAllListByRoleId(JdbcTemplate jdbcTemplate, Long roleId) {

@@ -13,19 +13,20 @@ import java.util.Map;
 /**
  * @author 燕赵阿祖
  */
-//@Configuration
-//public class DataSourceConfig {
-//    @Bean(name = "oracle1DataSource")
-//    @ConfigurationProperties(prefix = "spring.datasource.oracle1")
-//    public DataSource oracle1DataSource() {
-//        return DataSourceBuilder.create().build();
-//    }
-//
-//    @Bean(name = "oracle2DataSource")
-//    @ConfigurationProperties(prefix = "spring.datasource.oracle2")
-//    public DataSource oracle2DataSource() {
-//        return DataSourceBuilder.create().build();
-//    }
-//
-//
-//}
+@Configuration
+public class DataSourceConfig {
+    @Primary
+    @Bean(name = "slave_1")
+    @ConfigurationProperties(prefix = "spring.datasource.oracle1")
+    public DataSource slave_1() {
+        return DataSourceBuilder.create().build();
+    }
+
+    @Bean(name = "slave_2")
+    @ConfigurationProperties(prefix = "spring.datasource.oracle2")
+    public DataSource slave_2() {
+        return DataSourceBuilder.create().build();
+    }
+
+
+}

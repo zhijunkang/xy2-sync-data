@@ -1,7 +1,10 @@
 package com.xy2.service;
 
+import cn.hutool.core.bean.BeanUtil;
+import com.xy2.entity.*;
 import com.xy2.utils.RedisParameterUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -31,12 +35,6 @@ public class RedisDataSyncService {
     @Value("${server.area}")
     private String area;
 
-    public void a(){
-        Map<Object, Object> entries = sourceRedisTemplate.opsForHash().entries("0001FLY");
-        System.out.println(entries);
-        Set<Object> pop = targetRedisTemplate.opsForSet().members("0001FLY_10");
-        System.out.println(pop);
-    }
 
     public  void insertKey(String key, String filed, String value) {
         Boolean aBoolean = targetRedisTemplate.opsForHash().putIfAbsent(key, filed, value);
@@ -70,7 +68,52 @@ public class RedisDataSyncService {
     }
 
 
-    public void sysRedis(){
+    public List<Goodstable> getReidsGoods(String key, String id){
+//        Map<String,Goodstable> map = new HashMap<>();
+//        Map<Object, Object> entries = sourceRedisTemplate.opsForHash().entries(key);
+//        entries.forEach((k,v)->{
+//            System.out.println(k);
+//            System.out.println(v);
+//        });
+        List<Goodstable> goodstables = BeanUtil.copyToList(sourceRedisTemplate.opsForHash().values(key), Goodstable.class);
+        List<Goodstable> collect = goodstables.stream().filter(goodstable -> goodstable.getRoleId().equals(id)).collect(Collectors.toList());
+        return collect;
+    }
 
+
+    public List<RoleSummoning> getRoleSummoing(String key, String id){
+        List<RoleSummoning> roleSummonings = BeanUtil.copyToList(sourceRedisTemplate.opsForHash().values(key), RoleSummoning.class);
+        List<RoleSummoning> collect = roleSummonings.stream().filter(roleSummoning -> roleSummoning.getRoleid().equals(id)).collect(Collectors.toList());
+        return collect;
+    }
+
+    public List<Mount> getMount(String key, String id){
+        List<Mount> mounts = BeanUtil.copyToList(sourceRedisTemplate.opsForHash().values(key), Mount.class);
+        List<Mount> collect = mounts.stream().filter(mount -> mount.getRoleid().equals(id)).collect(Collectors.toList());
+        return collect;
+    }
+
+    public List<Lingbao> getLingbao(String key, String id){
+        List<Lingbao> lingbaos = BeanUtil.copyToList(sourceRedisTemplate.opsForHash().values(key), Lingbao.class);
+        List<Lingbao> collect = lingbaos.stream().filter(lingbao -> lingbao.getRoleid().equals(id)).collect(Collectors.toList());
+        return collect;
+    }
+
+    public List<Baby> getBaby(String key, String id){
+        List<Baby> babies = BeanUtil.copyToList(sourceRedisTemplate.opsForHash().values(key), Baby.class);
+        List<Baby> collect = babies.stream().filter(baby -> baby.getRoleid().equals(id)).collect(Collectors.toList());
+        return collect;
+    }
+
+    public List<Fly> getFly(String key, String id){
+        List<Fly> flyList = BeanUtil.copyToList(sourceRedisTemplate.opsForHash().values(key), Fly.class);
+        List<Fly> collect = flyList.stream().filter(fly -> fly.getRoleid().equals(id)).collect(Collectors.toList());
+        return collect;
+    }
+
+    public List<RolePal> getPal(String key, String id){
+        List<RolePal> pals = BeanUtil.copyToList(sourceRedisTemplate.opsForHash().values(key), RolePal.class);
+        List<RolePal> collect = pals.stream().filter(pal -> pal.getRoleid().equals(id)).collect(Collectors.toList());
+        return collect;
     }
 }

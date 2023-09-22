@@ -5,13 +5,15 @@ import com.xy2.entity.RoleSummoning;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
 
 @Repository
 public class RoleSummoningDaoImpl {
-
+    @Transactional(propagation = Propagation.NESTED)
     public int add(JdbcTemplate jdbcTemplate, RoleSummoning roleSummoning) {
         return jdbcTemplate.update("insert into role_summoning  (summoningid,summoningskin,stye,hp,mp,ap,sp,growlevel,resistance,skill,gold,wood,soil,water,fire,summoningname,sid,ssn,roleid,bone,spir,power,speed,canpoint,grade,exp,faithful,friendliness,price,basishp,basismp,basisap,basissp,openseal,innergoods,dragon,extrahp,extramp,extraap,extrasp,petskills,turnrount,gradehp,grademp,nedanresistance,revealnum,flyupnum,beastskills,fourattributes,skilldata,lyk,zqk,alchemynum,growupdannum,colorscheme,drac,trainnum,petlock,calm,czjjd,xy,deposit ) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,? )",
                 roleSummoning.getSummoningid(),roleSummoning.getSummoningskin(),roleSummoning.getStye(),roleSummoning.getHp(),roleSummoning.getMp(),roleSummoning.getAp(),roleSummoning.getSp(),roleSummoning.getGrowlevel(),roleSummoning.getResistance(),roleSummoning.getSkill(),roleSummoning.getGold(),roleSummoning.getWood(),roleSummoning.getSoil(),roleSummoning.getWater(),roleSummoning.getFire(),roleSummoning.getSummoningname(),roleSummoning.getSid(),roleSummoning.getSsn(),roleSummoning.getRoleid(),roleSummoning.getBone(),roleSummoning.getSpir(),roleSummoning.getPower(),roleSummoning.getSpeed(),roleSummoning.getCanpoint(),roleSummoning.getGrade(),roleSummoning.getExp(),roleSummoning.getFaithful(),roleSummoning.getFriendliness(),roleSummoning.getPrice(),roleSummoning.getBasishp(),roleSummoning.getBasismp(),roleSummoning.getBasisap(),roleSummoning.getBasissp(),roleSummoning.getOpenseal(),roleSummoning.getInnergoods(),roleSummoning.getDragon(),roleSummoning.getExtrahp(),roleSummoning.getExtramp(),roleSummoning.getExtraap(),roleSummoning.getExtrasp(),roleSummoning.getPetskills(),roleSummoning.getTurnrount(),roleSummoning.getGradehp(),roleSummoning.getGrademp(),roleSummoning.getNedanresistance(),roleSummoning.getRevealnum(),roleSummoning.getFlyupnum(),roleSummoning.getBeastskills(),roleSummoning.getFourattributes(),roleSummoning.getSkilldata(),roleSummoning.getLyk(),roleSummoning.getZqk(),roleSummoning.getAlchemynum(),roleSummoning.getGrowupdannum(),roleSummoning.getColorscheme(),roleSummoning.getDrac(),roleSummoning.getTrainnum(),roleSummoning.getPetlock(),roleSummoning.getCalm(),roleSummoning.getCzjjd(),roleSummoning.getXy(),roleSummoning.getDeposit());
@@ -54,7 +56,7 @@ public class RoleSummoningDaoImpl {
 
     public Long topId(JdbcTemplate jdbcTemplate,String zd){
         Long maxId = jdbcTemplate.queryForObject(String.format("SELECT MAX(" + zd + ") FROM role_summoning"), Long.class);
-        return maxId+1l;
+        return maxId == null ? 1L : maxId+1l;
     }
 
     public List<RoleSummoning> findAllListByRoleId(JdbcTemplate jdbcTemplate, Long roleId) {

@@ -5,6 +5,8 @@ import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -13,7 +15,6 @@ import java.util.Map;
 
 @Repository
 public class GangDaoImpl {
-
     public int add(JdbcTemplate jdbcTemplate, Gang gang) {
         return jdbcTemplate.update("insert into gang  (gangid,gangname,gangnumber,pkvalue,builder,property,ganggrade,founder,gangbelong,introduction,gangtxt ) values (?,?,?,?,?,?,?,?,?,?,? )",
                 gang.getGangid(),gang.getGangname(),gang.getGangnumber(),gang.getPkvalue(),gang.getBuilder(),gang.getProperty(),gang.getGanggrade(),gang.getFounder(),gang.getGangbelong(),gang.getIntroduction(),gang.getGangtxt());
@@ -56,7 +57,7 @@ public class GangDaoImpl {
 
     public Long topId(JdbcTemplate jdbcTemplate,String zd){
         Long maxId = jdbcTemplate.queryForObject(String.format("SELECT MAX(" + zd + ") FROM gang"), Long.class);
-        return maxId+1L;
+        return maxId == null ? 1L : maxId+1l;
     }
 
     public boolean isGangNameExists(JdbcTemplate jdbcTemplate, String gangname) {

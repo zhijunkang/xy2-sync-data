@@ -7,7 +7,6 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @PropertySource(value = "classpath:application.properties", encoding = "UTF-8")
 @SpringBootApplication
-@EnableTransactionManagement
 public class Xy2SyncDataApplication {
 
     public static void main(String[] args) {

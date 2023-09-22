@@ -5,13 +5,15 @@ import com.xy2.entity.RolrFly;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
 
 @Repository
 public class LingbaoDaoImpl {
-
+    @Transactional(propagation = Propagation.NESTED)
     public int add(JdbcTemplate jdbcTemplate, Lingbao lingbao) {
         return jdbcTemplate.update("insert into lingbao  (baoid,baoname,gethard,baotype,baoactive,baospeed,baoreply,baoshot,baoap,resistshot,assistance,goodskill,roleid,skin,skillsum,fusum,lingbaolvl,lingbaoexe,lingbaoqihe,skills,kangxing,equipment,baoquality,tianfuskill ) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,? )",
                 lingbao.getBaoid(),lingbao.getBaoname(),lingbao.getGethard(),lingbao.getBaotype(),lingbao.getBaoactive(),lingbao.getBaospeed(),lingbao.getBaoreply(),lingbao.getBaoshot(),lingbao.getBaoap(),lingbao.getResistshot(),lingbao.getAssistance(),lingbao.getGoodskill(),lingbao.getRoleid(),lingbao.getSkin(),lingbao.getSkillsum(),lingbao.getFusum(),lingbao.getLingbaolvl(),lingbao.getLingbaoexe(),lingbao.getLingbaoqihe(),lingbao.getSkills(),lingbao.getKangxing(),lingbao.getEquipment(),lingbao.getBaoquality(),lingbao.getTianfuskill());
@@ -54,7 +56,7 @@ public class LingbaoDaoImpl {
 
     public Long topId(JdbcTemplate jdbcTemplate,String zd){
         Long maxId = jdbcTemplate.queryForObject(String.format("SELECT MAX(" + zd + ") FROM lingbao"), Long.class);
-        return maxId+1l;
+        return maxId == null ? 1L : maxId+1l;
     }
 
     public List<Lingbao> findAllListByRoleId(JdbcTemplate jdbcTemplate, Long roleId) {

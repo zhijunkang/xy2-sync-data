@@ -58,6 +58,6 @@ public class ShangchengshopDaoImpl {
 
     public Long topId(JdbcTemplate jdbcTemplate,String zd){
         Long maxId = jdbcTemplate.queryForObject(String.format("SELECT MAX(" + zd + ") FROM shangchengshop"), Long.class);
-        return maxId+1l;
+        return maxId == null ? 1L : maxId+1l;
     }
 }

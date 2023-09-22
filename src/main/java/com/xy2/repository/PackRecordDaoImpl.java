@@ -5,13 +5,15 @@ import com.xy2.entity.RoleTable;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
 
 @Repository
 public class PackRecordDaoImpl {
-
+    @Transactional(propagation = Propagation.NESTED)
     public int add(JdbcTemplate jdbcTemplate, PackRecord packRecord) {
         return jdbcTemplate.update("insert into pack_record  (role_id,record,helpbb,helpling,suitnum,collect,suit1,suit2,suit3,suit4,suit5,suit6,suit7,suit8,suit9,suit10,suit11,tx,sldh,other ) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,? )",
                 packRecord.getRoleId(),packRecord.getRecord(),packRecord.getHelpbb(),packRecord.getHelpling(),packRecord.getSuitnum(),packRecord.getCollect(),packRecord.getSuit1(),packRecord.getSuit2(),packRecord.getSuit3(),packRecord.getSuit4(),packRecord.getSuit5(),packRecord.getSuit6(),packRecord.getSuit7(),packRecord.getSuit8(),packRecord.getSuit9(),packRecord.getSuit10(),packRecord.getSuit11(),packRecord.getTx(),packRecord.getSldh(),packRecord.getOther());
@@ -54,7 +56,7 @@ public class PackRecordDaoImpl {
 
     public Long topId(JdbcTemplate jdbcTemplate,String zd){
         Long maxId = jdbcTemplate.queryForObject(String.format("SELECT MAX(" + zd + ") FROM pack_record"), Long.class);
-        return maxId+1l;
+        return maxId == null ? 1L : maxId+1l;
     }
 
     public List<PackRecord> findAllListByRoleId(JdbcTemplate jdbcTemplate, Long roleId) {

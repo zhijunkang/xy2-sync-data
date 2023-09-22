@@ -4,13 +4,15 @@ import com.xy2.entity.Friend;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
 
 @Repository
 public class FriendDaoImpl {
-
+    @Transactional(propagation = Propagation.NESTED)
     public int add(JdbcTemplate jdbcTemplate, Friend friend) {
         return jdbcTemplate.update("insert into friend  (fid,roleid ) values (?,? )",
                 friend.getFid(),friend.getRoleid());
@@ -54,6 +56,6 @@ public class FriendDaoImpl {
 
     public Long topId(JdbcTemplate jdbcTemplate,String zd){
         Long maxId = jdbcTemplate.queryForObject(String.format("SELECT MAX(" + zd + ") FROM friend"), Long.class);
-        return maxId+1l;
+        return maxId == null ? 1L : maxId+1l;
     }
 }

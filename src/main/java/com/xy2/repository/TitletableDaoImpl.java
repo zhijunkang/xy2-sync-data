@@ -5,13 +5,15 @@ import com.xy2.entity.Titletable;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
 
 @Repository
 public class TitletableDaoImpl {
-
+    @Transactional(propagation = Propagation.NESTED)
     public int add(JdbcTemplate jdbcTemplate, Titletable titletable) {
         return jdbcTemplate.update("insert into titletable  (titleid,roleid ) values (?,? )",
                 titletable.getTitleid(),titletable.getRoleid());
@@ -54,7 +56,7 @@ public class TitletableDaoImpl {
 
     public Long topId(JdbcTemplate jdbcTemplate,String zd){
         Long maxId = jdbcTemplate.queryForObject(String.format("SELECT MAX(" + zd + ") FROM titletable"), Long.class);
-        return maxId+1l;
+        return maxId == null ? 1L : maxId+1l;
     }
 
     public List<Titletable> findAllListByRoleId(JdbcTemplate jdbcTemplate, Long roleId) {

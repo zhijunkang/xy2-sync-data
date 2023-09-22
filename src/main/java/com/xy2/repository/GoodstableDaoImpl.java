@@ -5,13 +5,15 @@ import com.xy2.entity.PackRecord;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
 
 @Repository
 public class GoodstableDaoImpl {
-
+    @Transactional(propagation = Propagation.NESTED)
     public int add(JdbcTemplate jdbcTemplate, Goodstable goodstable) {
         return jdbcTemplate.update("insert into goodstable  (goodsid,goodsname,skin,type,quality,value,instruction,rgid,role_id,status,usetime,defineprice,mapname,mapx,mapy,price,codecard ) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,? )",
                 goodstable.getGoodsid(),goodstable.getGoodsname(),goodstable.getSkin(),goodstable.getType(),goodstable.getQuality(),goodstable.getValue(),goodstable.getInstruction(),goodstable.getRgid(),goodstable.getRoleId(),goodstable.getStatus(),goodstable.getUsetime(),goodstable.getDefineprice(),goodstable.getMapname(),goodstable.getMapx(),goodstable.getMapy(),goodstable.getPrice(),goodstable.getCodecard());
@@ -54,7 +56,7 @@ public class GoodstableDaoImpl {
 
     public Long topId(JdbcTemplate jdbcTemplate,String zd){
         Long maxId = jdbcTemplate.queryForObject(String.format("SELECT MAX(" + zd + ") FROM goodstable"), Long.class);
-        return maxId+1l;
+        return maxId == null ? 1L : maxId+1l;
     }
 
     public List<Goodstable> findAllListByRoleId(JdbcTemplate jdbcTemplate, Long roleId) {

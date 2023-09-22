@@ -5,13 +5,15 @@ import com.xy2.entity.Titletable;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
 
 @Repository
 public class RolePalDaoImpl {
-
+    @Transactional(propagation = Propagation.NESTED)
     public int add(JdbcTemplate jdbcTemplate, RolePal rolePal) {
         return jdbcTemplate.update("insert into role_pal  (id,pid,grow,lvl,exp,parts ) values (?,?,?,?,?,? )",
                 rolePal.getId(),rolePal.getPid(),rolePal.getGrow(),rolePal.getLvl(),rolePal.getExp(),rolePal.getParts());
@@ -54,7 +56,7 @@ public class RolePalDaoImpl {
 
     public Long topId(JdbcTemplate jdbcTemplate,String zd){
         Long maxId = jdbcTemplate.queryForObject(String.format("SELECT MAX(" + zd + ") FROM role_pal"), Long.class);
-        return maxId+1l;
+        return maxId == null ? 1L : maxId+1l;
     }
 
     public List<RolePal> findAllListByRoleId(JdbcTemplate jdbcTemplate, Long roleId) {

@@ -6,6 +6,8 @@ import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -14,7 +16,7 @@ import java.util.Map;
 
 @Repository
 public class UsertableDaoImpl {
-
+    @Transactional(propagation = Propagation.NESTED)
     public int add(JdbcTemplate jdbcTemplate, Usertable usertable) {
         return jdbcTemplate.update("insert into usertable  (user_id,username,userpwd,activity,vip,frient_id,safety,idcard,codecard,money,qid,usermoney,userlastlogin,phonenumber,phonetime,loginip,registerip,flag,userregidtsertime ) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,? )",
                 usertable.getUserId(), usertable.getUsername(), usertable.getUserpwd(), usertable.getActivity(), usertable.getVip(), usertable.getFrientId(), usertable.getSafety(), usertable.getIdcard(), usertable.getCodecard(), usertable.getMoney(), usertable.getQid(), usertable.getUsermoney(), usertable.getUserlastlogin(), usertable.getPhonenumber(), usertable.getPhonetime(), usertable.getLoginip(), usertable.getRegisterip(), usertable.getFlag(), usertable.getUserregidtsertime());
@@ -52,7 +54,7 @@ public class UsertableDaoImpl {
 
     public Long topId(JdbcTemplate jdbcTemplate, String zd) {
         Long maxId = jdbcTemplate.queryForObject(String.format("SELECT MAX(" + zd + ") FROM usertable"), Long.class);
-        return maxId+1l;
+        return maxId == null ? 1L : maxId+1l;
     }
 
     public boolean isUsernameExists(JdbcTemplate jdbcTemplate, String username) {

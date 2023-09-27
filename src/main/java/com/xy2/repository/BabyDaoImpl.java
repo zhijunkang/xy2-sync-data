@@ -17,7 +17,7 @@ import java.util.Map;
  */
 @Repository
 public class BabyDaoImpl {
-    @Transactional(propagation = Propagation.NESTED)
+    //@Transactional(propagation = Propagation.NESTED)
     public int add(JdbcTemplate jdbcTemplate, Baby baby) {
         return jdbcTemplate.update("insert into baby  (babyid,babyname,qizhi,neili,zhili,naili,mingqi,daode,panni,wanxing,qingmi,xiaoxin,wenbao,pilao,yangyujin,roleid,babyage,childsex,outcome,talents,parts ) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,? )",
                 baby.getBabyid(),baby.getBabyname(),baby.getQizhi(),baby.getNeili(),baby.getZhili(),baby.getNaili(),baby.getMingqi(),baby.getDaode(),baby.getPanni(),baby.getWanxing(),baby.getQingmi(),baby.getXiaoxin(),baby.getWenbao(),baby.getPilao(),baby.getYangyujin(),baby.getRoleid(),baby.getBabyage(),baby.getChildsex(),baby.getOutcome(),baby.getTalents(),baby.getParts());

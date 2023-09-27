@@ -13,7 +13,7 @@ import java.util.Map;
 
 @Repository
 public class RolePalDaoImpl {
-    @Transactional(propagation = Propagation.NESTED)
+    //@Transactional(propagation = Propagation.NESTED)
     public int add(JdbcTemplate jdbcTemplate, RolePal rolePal) {
         return jdbcTemplate.update("insert into role_pal  (id,pid,grow,lvl,exp,parts ) values (?,?,?,?,?,? )",
                 rolePal.getId(),rolePal.getPid(),rolePal.getGrow(),rolePal.getLvl(),rolePal.getExp(),rolePal.getParts());

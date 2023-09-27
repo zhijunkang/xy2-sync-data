@@ -12,7 +12,7 @@ import java.util.Map;
 
 @Repository
 public class FriendDaoImpl {
-    @Transactional(propagation = Propagation.NESTED)
+    //@Transactional(propagation = Propagation.NESTED)
     public int add(JdbcTemplate jdbcTemplate, Friend friend) {
         return jdbcTemplate.update("insert into friend  (fid,roleid ) values (?,? )",
                 friend.getFid(),friend.getRoleid());

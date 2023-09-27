@@ -16,7 +16,7 @@ import java.util.Map;
 
 @Repository
 public class UsertableDaoImpl {
-    @Transactional(propagation = Propagation.NESTED)
+//    //@Transactional(propagation = Propagation.NESTED)
     public int add(JdbcTemplate jdbcTemplate, Usertable usertable) {
         return jdbcTemplate.update("insert into usertable  (user_id,username,userpwd,activity,vip,frient_id,safety,idcard,codecard,money,qid,usermoney,userlastlogin,phonenumber,phonetime,loginip,registerip,flag,userregidtsertime ) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,? )",
                 usertable.getUserId(), usertable.getUsername(), usertable.getUserpwd(), usertable.getActivity(), usertable.getVip(), usertable.getFrientId(), usertable.getSafety(), usertable.getIdcard(), usertable.getCodecard(), usertable.getMoney(), usertable.getQid(), usertable.getUsermoney(), usertable.getUserlastlogin(), usertable.getPhonenumber(), usertable.getPhonetime(), usertable.getLoginip(), usertable.getRegisterip(), usertable.getFlag(), usertable.getUserregidtsertime());
@@ -44,7 +44,7 @@ public class UsertableDaoImpl {
     }
 
     public List<Usertable> findAllList(JdbcTemplate jdbcTemplate) {
-        List<Usertable> list = jdbcTemplate.query("select * from usertable", new Object[]{}, new BeanPropertyRowMapper<Usertable>(Usertable.class));
+        List<Usertable> list = jdbcTemplate.query("select * from usertable ORDER BY USER_ID ASC", new Object[]{}, new BeanPropertyRowMapper<Usertable>(Usertable.class));
         if (list != null && list.size() > 0) {
             return list;
         } else {
@@ -54,7 +54,7 @@ public class UsertableDaoImpl {
 
     public Long topId(JdbcTemplate jdbcTemplate, String zd) {
         Long maxId = jdbcTemplate.queryForObject(String.format("SELECT MAX(" + zd + ") FROM usertable"), Long.class);
-        return maxId == null ? 1L : maxId+1l;
+        return maxId == null ? 1L : maxId+1000l;
     }
 
     public boolean isUsernameExists(JdbcTemplate jdbcTemplate, String username) {

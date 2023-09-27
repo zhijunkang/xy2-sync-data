@@ -13,7 +13,7 @@ import java.util.Map;
 
 @Repository
 public class TitletableDaoImpl {
-    @Transactional(propagation = Propagation.NESTED)
+    //@Transactional(propagation = Propagation.NESTED)
     public int add(JdbcTemplate jdbcTemplate, Titletable titletable) {
         return jdbcTemplate.update("insert into titletable  (titleid,roleid ) values (?,? )",
                 titletable.getTitleid(),titletable.getRoleid());

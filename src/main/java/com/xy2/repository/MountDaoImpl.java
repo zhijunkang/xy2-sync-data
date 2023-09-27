@@ -13,7 +13,7 @@ import java.util.Map;
 
 @Repository
 public class MountDaoImpl {
-    @Transactional(propagation = Propagation.NESTED)
+    //@Transactional(propagation = Propagation.NESTED)
     public int add(JdbcTemplate jdbcTemplate, Mount mount) {
         return jdbcTemplate.update("insert into mount  (mid,mountid,mountname,mountlvl,live,spri,power,bone,exp,roleid,sid,othrersid,usenumber,proficiency,sid3 ) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,? )",
                 mount.getMid(),mount.getMountid(),mount.getMountname(),mount.getMountlvl(),mount.getLive(),mount.getSpri(),mount.getPower(),mount.getBone(),mount.getExp(),mount.getRoleid(),mount.getSid(),mount.getOthrersid(),mount.getUsenumber(),mount.getProficiency(),mount.getSid3());

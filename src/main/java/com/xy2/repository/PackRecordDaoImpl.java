@@ -13,7 +13,7 @@ import java.util.Map;
 
 @Repository
 public class PackRecordDaoImpl {
-    @Transactional(propagation = Propagation.NESTED)
+    //@Transactional(propagation = Propagation.NESTED)
     public int add(JdbcTemplate jdbcTemplate, PackRecord packRecord) {
         return jdbcTemplate.update("insert into pack_record  (role_id,record,helpbb,helpling,suitnum,collect,suit1,suit2,suit3,suit4,suit5,suit6,suit7,suit8,suit9,suit10,suit11,tx,sldh,other ) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,? )",
                 packRecord.getRoleId(),packRecord.getRecord(),packRecord.getHelpbb(),packRecord.getHelpling(),packRecord.getSuitnum(),packRecord.getCollect(),packRecord.getSuit1(),packRecord.getSuit2(),packRecord.getSuit3(),packRecord.getSuit4(),packRecord.getSuit5(),packRecord.getSuit6(),packRecord.getSuit7(),packRecord.getSuit8(),packRecord.getSuit9(),packRecord.getSuit10(),packRecord.getSuit11(),packRecord.getTx(),packRecord.getSldh(),packRecord.getOther());

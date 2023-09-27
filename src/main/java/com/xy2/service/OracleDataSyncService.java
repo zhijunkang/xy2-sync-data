@@ -5,9 +5,11 @@ import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.StopWatch;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.json.JSONConfig;
 import cn.hutool.json.JSONNull;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.dynamic.datasource.DynamicRoutingDataSource;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.xy2.bean.RoleDataBean;
 import com.xy2.bean.UserDataBean;
 import com.xy2.entity.*;
@@ -58,6 +60,9 @@ public class OracleDataSyncService {
 
     @Value("${server.hq}")
     private String hq;
+
+
+
 
     @Autowired
     private RedisDataSyncService redisDataSyncService;
@@ -115,7 +120,7 @@ public class OracleDataSyncService {
 
 
     //用户表同步
-    @Transactional(value="txManager2",rollbackFor = Exception.class)
+    @Transactional(rollbackFor = Exception.class)
     public void syncUserTable() {
         try {
             StopWatch stopWatch = new StopWatch();
@@ -126,43 +131,56 @@ public class OracleDataSyncService {
 
             //开始同步帮派数据
             List<Gang> gangs = gangService.gangDataBuilds(jdbcTemplate1);
-            for (Gang gang : gangs) {
-                try {
-                    Long gangId = gangService.topId(jdbcTemplate2, "gangid");
-                    String oldGangId = gang.getGangid();
-                    gang.setGangid(String.valueOf(gangId));
-                    boolean gangNameExists = gangService.isGangNameExists(jdbcTemplate2, gang.getGangname());
-                    if (gangNameExists) {
-                        gang.setGangname(hq + gang.getGangname());
+            if(ObjectUtil.isNotEmpty(gangs)){
+                for (Gang gang : gangs) {
+                    try {
+                        Long gangId = gangService.topId(jdbcTemplate2, "gangid");
+                        String oldGangId = gang.getGangid();
+                        gang.setGangid(String.valueOf(gangId));
+                        boolean gangNameExists = gangService.isGangNameExists(jdbcTemplate2, gang.getGangname());
+                        if (gangNameExists) {
+                            gang.setGangname(hq + gang.getGangname());
+                        }
+                        gangRel.put(Long.parseLong(oldGangId), gangId);
+                        gangService.add(jdbcTemplate2, gang);
+                    } catch (Exception e) {
+                        log.error("同步帮派数据异常 回滚到最初状态！！！", e);
+                        throw new RuntimeException(e);
                     }
-                    gangRel.put(Long.parseLong(oldGangId), gangId);
-                    gangService.add(jdbcTemplate2, gang);
-                } catch (Exception e) {
-                    log.error("同步帮派数据异常 回滚到最初状态！！！", e);
-                    throw new RuntimeException(e);
                 }
             }
 
+            if(userDataBeans.size() < 0){
+                log.error("用户数据为空无法同步数据");
+                return;
+            }
             //开始同步用户数据
             for (UserDataBean userDataBean : userDataBeans) {
                 try {
-                    LocalDateTime lasetLoginTime = LocalDateTime.parse(userDataBean.getUserTable().getUserlastlogin(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-                    long days = Duration.between(lasetLoginTime, LocalDateTime.now()).toDays();
-                    //账号大于40天未登录进行清除
-                    if (days > 40) {
-                        return;
+                    if(StrUtil.isNotBlank(userDataBean.getUserTable().getUserlastlogin())){
+                        LocalDateTime lasetLoginTime = LocalDateTime.parse(userDataBean.getUserTable().getUserlastlogin(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+                        long days = Duration.between(lasetLoginTime, LocalDateTime.now()).toDays();
+                        //账号大于40天未登录进行清除
+                        if (days > 40) {
+                            return;
+                        }
                     }
                     Boolean usernameExists = usertableDao.isUsernameExists(jdbcTemplate2, userDataBean.getUserTable().getUsername());
                     //名字是否已存在
                     if (usernameExists) {
-                        userDataBean.getUserTable().setUsername("hq99" + usernameExists);
+                        userDataBean.getUserTable().setUsername("hq99" + userDataBean.getUserTable().getUsername());
                     }
                     Long user_id = usertableDao.topId(jdbcTemplate2, "user_id");
                     userDataBean.getUserTable().setUserId(String.valueOf(user_id));
                     usertableDao.add(jdbcTemplate2, userDataBean.getUserTable());
+//                    redisDataSyncService.insertUserContro("U",userDataBean.getUserTable().getUserId(),1+jsonString);
+
                 } catch (Exception e) {
                     log.error("同步用户数据 异常 回滚到最初状态！！！", e);
                     throw new RuntimeException(e);
+                }
+                if(ObjectUtil.isEmpty(userDataBean.getRoleDataBeans())){
+                    continue;
                 }
                 for (RoleDataBean roleDataBean : userDataBean.getRoleDataBeans()) {
                     //写入角色
@@ -181,6 +199,7 @@ public class OracleDataSyncService {
                             roleTable.setGangId(String.valueOf(aLong));
                         }
                         roleTableDao.add(jdbcTemplate2, roleTable);
+//                        redisDataSyncService.insertRoleContro("R",roleTable.getRoleId(),1+JSONUtil.toJsonStr(roleTable));
                     } catch (Exception e) {
                         log.error("同步角色数据 异常 回滚到最初状态！！！", e);
                         throw new RuntimeException(e);
@@ -188,102 +207,134 @@ public class OracleDataSyncService {
                     //写入角色背包数据
                     PackRecord packRecord = roleDataBean.getPackRecord();
                     packRecord.setRoleId(String.valueOf(role_id));
-                    packRecordDao.add(jdbcTemplate2, packRecord);
+//                    packRecordDao.add(jdbcTemplate2, packRecord);
                     //写入角色物品数据
+                    if(ObjectUtil.isEmpty(roleDataBean.getGoodstables())){
+                        continue;
+                    }
                     for (Goodstable goodstable : roleDataBean.getGoodstables()) {
                         try {
                             goodstable.setRoleId(String.valueOf(role_id));
                             goodstableDao.add(jdbcTemplate2, goodstable);
-                            redisDataSyncService.insertKey(RedisParameterUtil.GOODS, goodstable.getRgid() + "", JSONUtil.toJsonStr(goodstable));
-                            redisDataSyncService.insertListRedis(RedisParameterUtil.GOODS, goodstable.getRoleId(), goodstable.getRgid());
-                            redisDataSyncService.insertListRedis(RedisParameterUtil.GOODSID + "_" + goodstable.getRoleId(), goodstable.getGoodsid(), goodstable.getRgid());
-                            redisDataSyncService.insertListRedis(RedisParameterUtil.GOODSST + "_" + goodstable.getRoleId(), goodstable.getStatus(), goodstable.getRgid());
-                            redisDataSyncService.insertRoleControAdd(RedisParameterUtil.GOODS, goodstable.getRgid());
+                            redisDataSyncService.insertKey(RedisParameterUtil.getGameServerArea()+RedisParameterUtil.GOODS, goodstable.getRgid() + "", JSONUtil.toJsonStr(goodstable));
+                            redisDataSyncService.insertListRedis(RedisParameterUtil.getGameServerArea()+RedisParameterUtil.GOODS, String.valueOf(role_id), Integer.parseInt(goodstable.getRgid()));
+                            redisDataSyncService.insertListRedis(RedisParameterUtil.getGameServerArea()+RedisParameterUtil.GOODSID + "_" + goodstable.getRoleId(), goodstable.getGoodsid(), Integer.parseInt(goodstable.getRgid()));
+                            redisDataSyncService.insertListRedis(RedisParameterUtil.getGameServerArea()+RedisParameterUtil.GOODSST + "_" + goodstable.getRoleId(), goodstable.getStatus(),  Integer.parseInt(goodstable.getRgid()));
+                            redisDataSyncService.insertRoleControAdd(RedisParameterUtil.getGameServerArea()+RedisParameterUtil.GOODS, goodstable.getRgid());
                         } catch (Exception e) {
                             log.error("同步角色物品数据 异常 回滚到最初状态！！！", e);
                             throw new RuntimeException(e);
                         }
                     }
+
                     //写入角色召唤兽数据
+                    if(ObjectUtil.isEmpty(roleDataBean.getPets())){
+                        continue;
+                    }
                     for (RoleSummoning pet : roleDataBean.getPets()) {
                         try {
                             pet.setRoleid(String.valueOf(role_id));
-                            roleSummoningDao.add(jdbcTemplate2, pet);
-                            redisDataSyncService.insertKey(RedisParameterUtil.PET, pet.getSid(), JSONUtil.toJsonStr(pet));
-                            redisDataSyncService.insertListRedis(RedisParameterUtil.PET, pet.getRoleid(), pet.getSid());
-                            redisDataSyncService.insertRoleControAdd(RedisParameterUtil.PET, pet.getSid());
+//                            roleSummoningDao.add(jdbcTemplate2, pet);
+                            redisDataSyncService.insertKey(RedisParameterUtil.getGameServerArea()+RedisParameterUtil.PET, pet.getSid(), JSONUtil.toJsonStr(pet));
+                            redisDataSyncService.insertListRedis(RedisParameterUtil.getGameServerArea()+RedisParameterUtil.PET,  String.valueOf(role_id),Integer.parseInt(pet.getSid()));
+                            redisDataSyncService.insertRoleControAdd(RedisParameterUtil.getGameServerArea()+RedisParameterUtil.PET, pet.getSid());
                         } catch (Exception e) {
                             log.error("同步召唤兽数据 异常 回滚到最初状态！！！", e);
                             throw new RuntimeException(e);
                         }
                     }
+//
                     //写入角色坐骑数据
+                    if(ObjectUtil.isEmpty(roleDataBean.getMounts())){
+                        continue;
+                    }
                     for (Mount mount : roleDataBean.getMounts()) {
                         try {
                             mount.setRoleid(String.valueOf(role_id));
-                            mountDao.add(jdbcTemplate2, mount);
-                            redisDataSyncService.insertKey(RedisParameterUtil.MOUNT, mount.getMid(), JSONUtil.toJsonStr(mount));
-                            redisDataSyncService.insertListRedis(RedisParameterUtil.MOUNT, mount.getRoleid(), mount.getMid());
-                            redisDataSyncService.insertRoleControAdd(RedisParameterUtil.MOUNT, mount.getMid());
+//                            mountDao.add(jdbcTemplate2, mount);
+                            redisDataSyncService.insertKey(RedisParameterUtil.getGameServerArea()+RedisParameterUtil.MOUNT, mount.getMid(), JSONUtil.toJsonStr(mount));
+                            redisDataSyncService.insertListRedis(RedisParameterUtil.getGameServerArea()+RedisParameterUtil.MOUNT,  String.valueOf(role_id),Integer.parseInt(mount.getMid()));
+                            redisDataSyncService.insertRoleControAdd(RedisParameterUtil.getGameServerArea()+RedisParameterUtil.MOUNT, mount.getMid());
                         } catch (Exception e) {
                             log.error("同步坐骑数据 异常 回滚到最初状态！！！", e);
                             throw new RuntimeException(e);
                         }
                     }
+//
+
                     //写入角色飞行器数据
+                    if(ObjectUtil.isEmpty(roleDataBean.getFlys())){
+                        continue;
+                    }
                     for (Fly fly : roleDataBean.getFlys()) {
                         try {
                             fly.setRoleid(String.valueOf(role_id));
-//                    rolrFlyDao.add(jdbcTemplate2, fly);
-                            redisDataSyncService.insertKey(RedisParameterUtil.FLY, fly.getMid(), JSONUtil.toJsonStr(fly));
-                            redisDataSyncService.insertListRedis(RedisParameterUtil.FLY, fly.getRoleid(), fly.getMid());
-                            redisDataSyncService.insertRoleControAdd(RedisParameterUtil.FLY, fly.getMid());
+//
+                            redisDataSyncService.insertKey(RedisParameterUtil.getGameServerArea()+RedisParameterUtil.FLY, fly.getMid(), JSONUtil.toJsonStr(fly));
+                            redisDataSyncService.insertListRedis(RedisParameterUtil.getGameServerArea()+RedisParameterUtil.FLY, String.valueOf(role_id), Integer.parseInt( fly.getMid()));
+                            redisDataSyncService.insertRoleControAdd(RedisParameterUtil.getGameServerArea()+RedisParameterUtil.FLY, fly.getMid());
                         } catch (Exception e) {
                             log.error("同步飞行器数据 异常 回滚到最初状态！！！", e);
                             throw new RuntimeException(e);
                         }
                     }
+//                    redisDataSyncService.insertListRedis(RedisParameterUtil.getGameServerArea()+RedisParameterUtil.FLY, String.valueOf(role_id), flyids);
                     //写入角色灵宝数据
+                    if(ObjectUtil.isEmpty(roleDataBean.getLingbaos())){
+                        continue;
+                    }
                     for (Lingbao lingbao : roleDataBean.getLingbaos()) {
                         try {
                             lingbao.setRoleid(String.valueOf(role_id));
-                            lingbaoDao.add(jdbcTemplate2, lingbao);
-                            redisDataSyncService.insertKey(RedisParameterUtil.LINGBAO, lingbao.getBaoid() + "", JSONUtil.toJsonStr(lingbao));
-                            redisDataSyncService.insertListRedis(RedisParameterUtil.LINGBAO, lingbao.getRoleid().toString(), lingbao.getBaoid() + "");
-                            redisDataSyncService.insertRoleControAdd(RedisParameterUtil.LINGBAO, lingbao.getBaoid());
+                            redisDataSyncService.insertKey(RedisParameterUtil.getGameServerArea()+RedisParameterUtil.LINGBAO, lingbao.getBaoid() + "", JSONUtil.toJsonStr(lingbao));
+                            redisDataSyncService.insertListRedis(RedisParameterUtil.getGameServerArea()+RedisParameterUtil.LINGBAO, String.valueOf(role_id), Integer.parseInt(lingbao.getBaoid()));
+                            redisDataSyncService.insertRoleControAdd(RedisParameterUtil.getGameServerArea()+RedisParameterUtil.LINGBAO, lingbao.getBaoid());
                         } catch (Exception e) {
                             log.error("同步灵宝数据 异常 回滚到最初状态！！！", e);
                             throw new RuntimeException(e);
                         }
                     }
+//
+
                     //写入角色孩子数据
+                    if(ObjectUtil.isEmpty(roleDataBean.getBabys())){
+                        continue;
+                    }
+
                     for (Baby baby : roleDataBean.getBabys()) {
                         try {
                             baby.setRoleid(String.valueOf(role_id));
-                            babyDao.add(jdbcTemplate2, baby);
-                            redisDataSyncService.insertKey(RedisParameterUtil.BABY, baby.getBabyid(), JSONUtil.toJsonStr(baby));
-                            redisDataSyncService.insertListRedis(RedisParameterUtil.BABY, baby.getRoleid(), baby.getBabyid());
-                            redisDataSyncService.insertRoleControAdd(RedisParameterUtil.BABY, baby.getBabyid());
+                            redisDataSyncService.insertKey(RedisParameterUtil.getGameServerArea()+RedisParameterUtil.BABY, baby.getBabyid(), JSONUtil.toJsonStr(baby));
+                            redisDataSyncService.insertListRedis(RedisParameterUtil.getGameServerArea()+RedisParameterUtil.BABY, String.valueOf(role_id), Integer.parseInt(baby.getBabyid()));
+                            redisDataSyncService.insertRoleControAdd(RedisParameterUtil.getGameServerArea()+RedisParameterUtil.BABY, baby.getBabyid());
                         } catch (Exception e) {
                             log.error("同步孩子数据 异常 回滚到最初状态！！！", e);
                             throw new RuntimeException(e);
                         }
                     }
+//
+
                     //写入角色称谓
+                    if(ObjectUtil.isEmpty(roleDataBean.getTitletables())){
+                        continue;
+                    }
                     for (Titletable titletable : roleDataBean.getTitletables()) {
                         try {
                             titletable.setRoleid(String.valueOf(role_id));
-                            titletableDao.add(jdbcTemplate2, titletable);
+//                            titletableDao.add(jdbcTemplate2, titletable);
                         } catch (Exception e) {
                             log.error("同步角色称谓数据 异常 回滚到最初状态！！！", e);
                             throw new RuntimeException(e);
                         }
                     }
                     //写入角色伙伴数据
+                    if(ObjectUtil.isEmpty(roleDataBean.getRolePals())){
+                        continue;
+                    }
                     for (RolePal rolePal : roleDataBean.getRolePals()) {
                         try {
                             rolePal.setRoleid(String.valueOf(role_id));
-                            rolePalDao.add(jdbcTemplate2, rolePal);
+//                            rolePalDao.add(jdbcTemplate2, rolePal);
                         } catch (Exception e) {
                             log.error("同步角色伙伴数据 异常 回滚到最初状态！！！", e);
                             throw new RuntimeException(e);
@@ -294,7 +345,11 @@ public class OracleDataSyncService {
 
 
             //开始同步好友数据
+
             List<Friend> friends = this.friendDataBuilds();
+            if(ObjectUtil.isEmpty(friends)){
+                return;
+            }
             for (Friend friend : friends) {
                 try {
                     Long fid = friendDao.topId(jdbcTemplate2, "fid");
@@ -309,7 +364,7 @@ public class OracleDataSyncService {
                     friend.setFid(String.valueOf(fid));
                     friend.setRoleid(String.valueOf(newRole));
                     friend.setFriendid(String.valueOf(newFriend));
-                    friendDao.add(jdbcTemplate2, friend);
+//                    friendDao.add(jdbcTemplate2, friend);
                 } catch (Exception e) {
                     log.error("同步好友数据 异常 回滚到最初状态！！！", e);
                     throw new RuntimeException(e);

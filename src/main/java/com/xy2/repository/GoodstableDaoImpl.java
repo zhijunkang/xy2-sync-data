@@ -13,7 +13,7 @@ import java.util.Map;
 
 @Repository
 public class GoodstableDaoImpl {
-    @Transactional(propagation = Propagation.NESTED)
+    //@Transactional(propagation = Propagation.NESTED)
     public int add(JdbcTemplate jdbcTemplate, Goodstable goodstable) {
         return jdbcTemplate.update("insert into goodstable  (goodsid,goodsname,skin,type,quality,value,instruction,rgid,role_id,status,usetime,defineprice,mapname,mapx,mapy,price,codecard ) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,? )",
                 goodstable.getGoodsid(),goodstable.getGoodsname(),goodstable.getSkin(),goodstable.getType(),goodstable.getQuality(),goodstable.getValue(),goodstable.getInstruction(),goodstable.getRgid(),goodstable.getRoleId(),goodstable.getStatus(),goodstable.getUsetime(),goodstable.getDefineprice(),goodstable.getMapname(),goodstable.getMapx(),goodstable.getMapy(),goodstable.getPrice(),goodstable.getCodecard());

@@ -13,7 +13,7 @@ import java.util.Map;
 
 @Repository
 public class LingbaoDaoImpl {
-    @Transactional(propagation = Propagation.NESTED)
+    //@Transactional(propagation = Propagation.NESTED)
     public int add(JdbcTemplate jdbcTemplate, Lingbao lingbao) {
         return jdbcTemplate.update("insert into lingbao  (baoid,baoname,gethard,baotype,baoactive,baospeed,baoreply,baoshot,baoap,resistshot,assistance,goodskill,roleid,skin,skillsum,fusum,lingbaolvl,lingbaoexe,lingbaoqihe,skills,kangxing,equipment,baoquality,tianfuskill ) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,? )",
                 lingbao.getBaoid(),lingbao.getBaoname(),lingbao.getGethard(),lingbao.getBaotype(),lingbao.getBaoactive(),lingbao.getBaospeed(),lingbao.getBaoreply(),lingbao.getBaoshot(),lingbao.getBaoap(),lingbao.getResistshot(),lingbao.getAssistance(),lingbao.getGoodskill(),lingbao.getRoleid(),lingbao.getSkin(),lingbao.getSkillsum(),lingbao.getFusum(),lingbao.getLingbaolvl(),lingbao.getLingbaoexe(),lingbao.getLingbaoqihe(),lingbao.getSkills(),lingbao.getKangxing(),lingbao.getEquipment(),lingbao.getBaoquality(),lingbao.getTianfuskill());

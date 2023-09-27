@@ -1,6 +1,7 @@
 package com.xy2.service;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.util.ObjectUtil;
 import com.xy2.entity.*;
 import com.xy2.utils.RedisParameterUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -16,10 +17,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -41,7 +39,18 @@ public class RedisDataSyncService {
         log.info("insertKey key:{} result :{}",key,aBoolean);
     }
 
-    public Long insertListRedis(String key, String id, String value){
+    public Long insertListRedis(String key, String id, Integer value){
+        Long okOrNo=null;
+        if (id!=null) {
+
+            okOrNo =  targetRedisTemplate.opsForSet().add(key+"_"+id,value);
+        }else {
+            okOrNo = targetRedisTemplate.opsForSet().add(key,value);
+        }
+        return okOrNo;
+    }
+
+    public Long insertListRedisLists(String key, String id, List<Integer> value){
         Long okOrNo=null;
         if (id!=null) {
 
@@ -54,20 +63,32 @@ public class RedisDataSyncService {
 
     public void insertRoleControAdd(String key, String id){
         String value =key+":"+id;
-        targetRedisTemplate.opsForHash().putIfAbsent(RedisParameterUtil.ROLE_CONTROL, value, "1");
+        targetRedisTemplate.opsForHash().put(area+RedisParameterUtil.ROLE_CONTROL, value, "1");
     }
 
     public void insertRoleControDel(String key, String id){
         String value =key+":"+id;
-        targetRedisTemplate.opsForHash().putIfAbsent(RedisParameterUtil.ROLE_CONTROL, value, "3");
+        targetRedisTemplate.opsForHash().put(area+RedisParameterUtil.ROLE_CONTROL, value, "3");
     }
 
     public void insertRoleControUpd(String key, String id){
         String value =key+":"+id;
-        targetRedisTemplate.opsForHash().putIfAbsent(RedisParameterUtil.ROLE_CONTROL, value, "2");
+        targetRedisTemplate.opsForHash().put(area+RedisParameterUtil.ROLE_CONTROL, value, "2");
+    }
+
+    public void insertUserContro(String key, String id, String json){
+        String value =key+":"+id;
+        targetRedisTemplate.opsForHash().put(area+RedisParameterUtil.USER_REDIS, value, json);
+    }
+
+    public void insertRoleContro(String key, String id, String json){
+        String value =key+":"+id;
+        targetRedisTemplate.opsForHash().put(area+RedisParameterUtil.USER_REDIS, value, json);
     }
 
 
+
+    List<Goodstable> goodstables = null;
     public List<Goodstable> getReidsGoods(String key, String id){
 //        Map<String,Goodstable> map = new HashMap<>();
 //        Map<Object, Object> entries = sourceRedisTemplate.opsForHash().entries(key);
@@ -75,7 +96,9 @@ public class RedisDataSyncService {
 //            System.out.println(k);
 //            System.out.println(v);
 //        });
-        List<Goodstable> goodstables = BeanUtil.copyToList(sourceRedisTemplate.opsForHash().values(key), Goodstable.class);
+        if(ObjectUtil.isEmpty(goodstables)){
+            goodstables = BeanUtil.copyToList(sourceRedisTemplate.opsForHash().values(key), Goodstable.class);
+        }
         List<Goodstable> collect = goodstables.stream().filter(goodstable -> goodstable.getRoleId().equals(id)).collect(Collectors.toList());
         return collect;
     }

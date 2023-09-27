@@ -189,6 +189,7 @@ public class OracleDataSyncService {
                     roleRel.put(Long.parseLong(roleTable.getRoleId()), role_id);
                     try {
                         roleTable.setRoleId(String.valueOf(role_id));
+                        roleTable.setUserId(userDataBean.getUserTable().getUserId());
                         boolean roleNameExists = roleTableDao.isRoleNameExists(jdbcTemplate2, roleTable.getRolename());
                         if (roleNameExists) {
                             roleTable.setRolename(hq + roleTable.getRolename());
@@ -234,7 +235,7 @@ public class OracleDataSyncService {
                     for (RoleSummoning pet : roleDataBean.getPets()) {
                         try {
                             pet.setRoleid(String.valueOf(role_id));
-//                            roleSummoningDao.add(jdbcTemplate2, pet);
+                            roleSummoningDao.add(jdbcTemplate2, pet);
                             redisDataSyncService.insertKey(RedisParameterUtil.getGameServerArea()+RedisParameterUtil.PET, pet.getSid(), JSONUtil.toJsonStr(pet));
                             redisDataSyncService.insertListRedis(RedisParameterUtil.getGameServerArea()+RedisParameterUtil.PET,  String.valueOf(role_id),Integer.parseInt(pet.getSid()));
                             redisDataSyncService.insertRoleControAdd(RedisParameterUtil.getGameServerArea()+RedisParameterUtil.PET, pet.getSid());
@@ -251,7 +252,7 @@ public class OracleDataSyncService {
                     for (Mount mount : roleDataBean.getMounts()) {
                         try {
                             mount.setRoleid(String.valueOf(role_id));
-//                            mountDao.add(jdbcTemplate2, mount);
+                            mountDao.add(jdbcTemplate2, mount);
                             redisDataSyncService.insertKey(RedisParameterUtil.getGameServerArea()+RedisParameterUtil.MOUNT, mount.getMid(), JSONUtil.toJsonStr(mount));
                             redisDataSyncService.insertListRedis(RedisParameterUtil.getGameServerArea()+RedisParameterUtil.MOUNT,  String.valueOf(role_id),Integer.parseInt(mount.getMid()));
                             redisDataSyncService.insertRoleControAdd(RedisParameterUtil.getGameServerArea()+RedisParameterUtil.MOUNT, mount.getMid());
@@ -260,7 +261,7 @@ public class OracleDataSyncService {
                             throw new RuntimeException(e);
                         }
                     }
-//
+
 
                     //写入角色飞行器数据
                     if(ObjectUtil.isEmpty(roleDataBean.getFlys())){
@@ -269,7 +270,7 @@ public class OracleDataSyncService {
                     for (Fly fly : roleDataBean.getFlys()) {
                         try {
                             fly.setRoleid(String.valueOf(role_id));
-//
+
                             redisDataSyncService.insertKey(RedisParameterUtil.getGameServerArea()+RedisParameterUtil.FLY, fly.getMid(), JSONUtil.toJsonStr(fly));
                             redisDataSyncService.insertListRedis(RedisParameterUtil.getGameServerArea()+RedisParameterUtil.FLY, String.valueOf(role_id), Integer.parseInt( fly.getMid()));
                             redisDataSyncService.insertRoleControAdd(RedisParameterUtil.getGameServerArea()+RedisParameterUtil.FLY, fly.getMid());
@@ -321,7 +322,7 @@ public class OracleDataSyncService {
                     for (Titletable titletable : roleDataBean.getTitletables()) {
                         try {
                             titletable.setRoleid(String.valueOf(role_id));
-//                            titletableDao.add(jdbcTemplate2, titletable);
+                            titletableDao.add(jdbcTemplate2, titletable);
                         } catch (Exception e) {
                             log.error("同步角色称谓数据 异常 回滚到最初状态！！！", e);
                             throw new RuntimeException(e);

@@ -63,25 +63,8 @@ public class RoleSummoning {
   private String petlock;
   private String calm;
   private String czjjd;
-  private String xy;
 
-  public String getDeposit() {
-    return deposit;
-  }
 
-  public void setDeposit(String deposit) {
-    this.deposit = deposit;
-  }
-
-  private String deposit;
-
-  public String getXy() {
-    return xy;
-  }
-
-  public void setXy(String xy) {
-    this.xy = xy;
-  }
 
   public String getXinyuan() {
     return xinyuan;

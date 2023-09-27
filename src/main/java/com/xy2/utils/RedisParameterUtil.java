@@ -65,7 +65,7 @@ public class RedisParameterUtil {
     /**
      * 召唤兽
      */
-    public final static String PET = getGameServerArea() + "PET";
+    public final static String PET =   "PET";
     /**
      * 灵宝
      */
